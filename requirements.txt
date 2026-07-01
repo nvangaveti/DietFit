@@ -1,0 +1,10 @@
+langgraph
+langchain
+langchain-groq
+langchain-community
+tavily-python
+streamlit
+python-dotenv
+requests
+google-generativeai
+Pillow
