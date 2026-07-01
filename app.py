@@ -51,7 +51,7 @@ if os.path.exists("style.css"):
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # Main Title
-st.markdown('<div class="main-title">🥗 DIETFIT</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-title">DIETFIT</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Simplified AI Fitness Planner & Recipe Personalizer</div>', unsafe_allow_html=True)
 
 # Initialize Session States
