@@ -1,6 +1,6 @@
 from typing import TypedDict, Optional, List
 class AgentState(TypedDict):
-    username: str
+    email: str
     goal:str
     diet_type:str
     weight_kg:float

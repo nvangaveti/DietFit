@@ -54,8 +54,12 @@ if os.path.exists("style.css"):
 st.markdown('<div class="main-title">DIETFIT</div>', unsafe_allow_html=True)
 st.markdown('<div class="subtitle">Simplified AI Fitness Planner & Recipe Personalizer</div>', unsafe_allow_html=True)
 
+# Helper to validate email format
+def is_valid_email(email_str: str) -> bool:
+    return "@" in email_str and "." in email_str.split("@")[-1]
+
 # Initialize Session States
-for key, val in [("username", None), ("profile", None), ("awaiting_confirmation", False), 
+for key, val in [("email", None), ("profile", None), ("awaiting_confirmation", False), 
                  ("detected_dish_name", ""), ("analysis_results", None)]:
     if key not in st.session_state:
         st.session_state[key] = val
@@ -63,31 +67,37 @@ for key, val in [("username", None), ("profile", None), ("awaiting_confirmation"
 # Sidebar User Authentication
 with st.sidebar:
     st.markdown("### 🔐 User Space")
-    if not st.session_state.username:
-        username_input = st.text_input("Enter Username", value="", placeholder="e.g., nikhil").strip()
+    if not st.session_state.email:
+        email_input = st.text_input("Enter Email Address", value="", placeholder="e.g., user@example.com").strip()
         col1, col2 = st.columns(2)
-        if col1.button("Log In") and username_input:
-            profile = load_user(username_input)
-            if profile:
-                st.session_state.username = username_input
-                st.session_state.profile = profile
-                st.rerun()
+        if col1.button("Log In") and email_input:
+            if not is_valid_email(email_input):
+                st.error("Please enter a valid email address.")
             else:
-                st.error("User not found. Please register.")
+                profile = load_user(email_input)
+                if profile:
+                    st.session_state.email = email_input
+                    st.session_state.profile = profile
+                    st.rerun()
+                else:
+                    st.error("User not found. Please register.")
                 
-        if col2.button("Register") and username_input:
-            profile = load_user(username_input)
-            if profile:
-                st.error("Username already exists. Please login.")
+        if col2.button("Register") and email_input:
+            if not is_valid_email(email_input):
+                st.error("Please enter a valid email address.")
             else:
-                st.session_state.username = username_input
-                st.session_state.profile = "NEW"
-                st.rerun()
+                profile = load_user(email_input)
+                if profile:
+                    st.error("Email already registered. Please login.")
+                else:
+                    st.session_state.email = email_input
+                    st.session_state.profile = "NEW"
+                    st.rerun()
     else:
         st.markdown(f"""
             <div class="sidebar-user">
                 <strong>Logged in as:</strong><br>
-                <span style="font-size: 1.2rem; color: #6366f1; font-weight: 600;">{st.session_state.username}</span>
+                <span style="font-size: 1.2rem; color: #6366f1; font-weight: 600;">{st.session_state.email}</span>
             </div>
         """, unsafe_allow_html=True)
         
@@ -99,7 +109,7 @@ with st.sidebar:
             st.markdown(f"**Height:** {prof.get('height_cm')} cm")
             
         if st.sidebar.button("Logout"):
-            st.session_state.username = None
+            st.session_state.email = None
             st.session_state.profile = None
             st.session_state.awaiting_confirmation = False
             st.session_state.detected_dish_name = ""
@@ -107,8 +117,8 @@ with st.sidebar:
             st.rerun()
 
 # Application Flow logic
-if not st.session_state.username:
-    st.info("👈 Enter your username in the sidebar to log in or register a new profile.")
+if not st.session_state.email:
+    st.info("👈 Enter your email address in the sidebar to log in or register a new profile.")
     
 elif st.session_state.profile == "NEW":
     st.markdown('<h3 class="section-header">🆕 User Registration & Target Calibration</h3>', unsafe_allow_html=True)
@@ -151,7 +161,7 @@ elif st.session_state.profile == "NEW":
                 "carb_target": output_state.get("carb_target"),
                 "fat_target": output_state.get("fat_target")
             }
-            save_user(st.session_state.username, new_profile)
+            save_user(st.session_state.email, new_profile)
             st.session_state.profile = new_profile
             st.rerun()
 
@@ -178,7 +188,7 @@ else:
             "carb_target": output_state.get("carb_target"),
             "fat_target": output_state.get("fat_target")
         })
-        save_user(st.session_state.username, calibrated_prof)
+        save_user(st.session_state.email, calibrated_prof)
         st.session_state.profile = calibrated_prof
         st.rerun()
         
@@ -216,7 +226,7 @@ else:
         with st.spinner("Fetching details with multi-agent coordination..."):
             input_state = {
                 "status": "analyze",
-                "username": st.session_state.username,
+                "email": st.session_state.email,
                 "goal": custom_prof.get("goal"),
                 "diet_type": custom_prof.get("diet_type"),
                 "calorie_target": custom_prof.get("calorie_target"),
@@ -260,7 +270,7 @@ else:
                 with st.spinner("Analyzing image with multi-agent orchestration..."):
                     input_state = {
                         "status": "analyze",
-                        "username": st.session_state.username,
+                        "email": st.session_state.email,
                         "goal": custom_prof.get("goal"),
                         "diet_type": custom_prof.get("diet_type"),
                         "calorie_target": custom_prof.get("calorie_target"),

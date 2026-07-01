@@ -1,6 +1,6 @@
 import os
 import json
-def load_user(username: str) -> dict | None:
+def load_user(email: str) -> dict | None:
     if not os.path.exists("users.json"):
         return None
     with open("users.json", "r") as f:
@@ -9,14 +9,14 @@ def load_user(username: str) -> dict | None:
             return None
         data = json.loads(content)
 
-    return data["users"].get(username, None)
-def save_user(username:str,profile: dict) -> None:
+    return data["users"].get(email, None)
+def save_user(email:str,profile: dict) -> None:
     if os.path.exists("users.json"):
         with open("users.json","r") as f:
             data = json.load(f)
     else:
         data = {"users":{}}
-    data["users"][username] = profile
+    data["users"][email] = profile
     with open("users.json",'w') as f:
         json.dump(data,f)
 
