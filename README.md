@@ -1,14 +1,17 @@
 # 🥗 DietFit - A Friendly Diet Advisor
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://YOUR_STREAMLIT_APP_DEPLOYMENT_URL.streamlit.app)
+*(Replace the link above with your actual deployment URL once live)*
+
 DietFit is a premium, agent-driven AI fitness planning and recipe personalization platform. It combines a beautiful **Streamlit** user interface with a robust multi-agent orchestration graph powered by **LangGraph**. The platform allows users to input their stats, calibrate dietary targets, upload food images for automated visual recognition, retrieve detailed USDA-backed nutrition metrics, and receive personalized recipe adjustments and advice from an AI sports nutritionist agent.
 
 ---
 
 ## 🌟 Key Features
 
-* **🔐 Personalized User Space:** Save profiles, set fitness goals (e.g., Lose Fat, Build Muscle, Maintain), and specify dietary preferences (e.g., Keto, Vegan, Balanced, Low Carb).
+* **🔐 Personalized User Space:** Save profiles, set fitness goals (e.g., Lose Fat, Build Muscle, Maintain), and specify dietary preferences (e.g., Keto, Vegan, Balanced, Low Carb) using a unique **Email Address**.
 * **📐 Automated Macro Calibration:** Computes BMR using the Mifflin-St Jeor formula and TDEE based on physical activity multipliers to dynamically structure daily calorie and macronutrient targets.
-* **📸 Multimodal Food Vision:** Identifies food dishes directly from image uploads using Google's **Gemini 1.5 Flash** model.
+* **📸 Multimodal Food Vision:** Identifies food dishes directly from image uploads using Google's **Gemini 2.5 Flash** model.
 * **🔍 USDA API Integration:** Retrieves precise nutritional information (Calories, Protein, Carbs, Fat) using the USDA FoodData Central API, with an intelligent LLM backup estimator.
 * **🍳 Intelligent Recipe Personalization:** Locates recipes using Tavily search queries and re-engineers ingredient ratios or serving sizes to fit the user's customized daily macro targets.
 
@@ -41,7 +44,7 @@ flowchart TD
 ### Specialized Agents
 
 1. **Calculator Agent (`calculator.py`):** Calculates BMR/TDEE and calibrates target daily limits based on goals and chosen diets.
-2. **Vision Agent (`vision.py`):** Performs food recognition using Gemini Flash model. If the classification confidence is below 70%, the process pauses to allow manual user confirmation.
+2. **Vision Agent (`vision.py`):** Performs food recognition using the Gemini 2.5 Flash model. If the classification confidence is below 70%, the process pauses to allow manual user confirmation.
 3. **Nutrition Agent (`nutrition.py`):** Resolves macronutrients of identified dishes using the USDA API database, failing back to a Groq LLM estimator.
 4. **Recipe Agent (`recipe.py`):** Performs web search for the dish's recipe using Tavily, structuring it cleanly into ingredients, measures, and directions.
 5. **Advisor Agent (`advisor.py`):** The final evaluation node that compares original recipe macros against user limits, adjusting portions or substituting ingredients with explicit math breakdown.
@@ -59,7 +62,7 @@ flowchart TD
 │   ├── recipe.py        # Fetches and structures recipes via Tavily Search
 │   └── vision.py        # Orchestrates Gemini image analysis
 ├── utils/
-│   ├── gemini.py        # Gemini 1.5 Flash vision integration
+│   ├── gemini.py        # Gemini 2.5 Flash vision integration
 │   ├── storage.py       # JSON storage helper for user profiles
 │   └── usda.py          # USDA API client connection helper
 ├── app.py               # Streamlit application dashboard & UI
@@ -120,4 +123,4 @@ Launch the Streamlit web dashboard locally using the command:
 streamlit run app.py
 ```
 
-The terminal will provide a local URL (usually `http://localhost:8501`) to access the interface. Log in or register in the sidebar to begin tracking your diet and plans.
+The terminal will provide a local URL (usually `http://localhost:8501`) to access the interface. Log in or register in the sidebar using your email address to begin tracking your diet and plans.
