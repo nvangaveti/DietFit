@@ -14,8 +14,8 @@ def analyze_dish_image(image_input) -> dict:
     
     genai.configure(api_key=api_key)
     
-    # We can try to use gemini-1.5-flash for maximum stability.
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # Use gemini-2.5-flash for maximum stability and support.
+    model = genai.GenerativeModel('gemini-2.5-flash')
     
     try:
         image = Image.open(image_input)
