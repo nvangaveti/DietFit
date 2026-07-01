@@ -123,3 +123,5 @@ streamlit run app.py
 ```
 
 The terminal will provide a local URL (usually `http://localhost:8501`) to access the interface. Log in or register in the sidebar using your email address to begin tracking your diet and plans.
+### Deployed Application Links
+- **Interactive Live App**: [Standalone App](https://dietfit-b6zhx88cokxf4yghmwynvz.streamlit.app/)
