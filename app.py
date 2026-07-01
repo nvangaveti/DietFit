@@ -12,7 +12,7 @@ from graph import app_graph
 
 # Configure Streamlit page layout
 st.set_page_config(
-    page_title="DietFit - Premium AI Fitness & Diet Advisor",
+    page_title="DietFit - A Friendly Diet Advisor",
     page_icon="🥗",
     layout="wide",
     initial_sidebar_state="expanded"
