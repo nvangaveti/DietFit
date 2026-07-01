@@ -14,3 +14,6 @@ wheels/
 
 # Local database storage
 users.json
+
+# Recruiter & Interviewer explanation docs
+project_explanation.txt
