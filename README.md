@@ -1,7 +1,7 @@
 # 🥗 DietFit - A Friendly Diet Advisor
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://dietfit-b6zhx88cokxf4yghmwynvz.streamlit.app/)
-*Click on this to view the application online*
+*  Click on this to view the application online*
 
 DietFit is a premium, agent-driven AI fitness planning and recipe personalization platform. It combines a beautiful **Streamlit** user interface with a robust multi-agent orchestration graph powered by **LangGraph**. The platform allows users to input their stats, calibrate dietary targets, upload food images for automated visual recognition, retrieve detailed USDA-backed nutrition metrics, and receive personalized recipe adjustments and advice from an AI sports nutritionist agent.
 
