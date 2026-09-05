@@ -1,38 +1,41 @@
-# 🥗 DietFit - A Friendly Diet Advisor
+# 🥗 DietFit - Intelligent Nutrition & Meal Analysis
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://dietfit-b6zhx88cokxf4yghmwynvz.streamlit.app/)  *Click on this to view the application online*
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://dietfit-b6zhx88cokxf4yghmwynvz.streamlit.app/) *Click to access the live application online*
 
-DietFit is a premium, agent-driven AI fitness planning and recipe personalization platform. It combines a beautiful **Streamlit** user interface with a robust multi-agent orchestration graph powered by **LangGraph**. The platform allows users to input their stats, calibrate dietary targets, upload food images for automated visual recognition, retrieve detailed USDA-backed nutrition metrics, and receive personalized recipe adjustments and advice from an AI sports nutritionist agent.
+DietFit is an agentic AI sports nutrition and meal intelligence platform. Built with a clean, responsive **Streamlit** user interface and an orchestration graph powered by **LangGraph**, DietFit automates dietary macro calibration, multimodal food recognition via Google Gemini 2.5 Flash, USDA-backed nutrition retrieval, authentic web recipe extraction, and personalized culinary adjustments.
 
 ---
 
 ## 🌟 Key Features
 
-* **🔐 Personalized User Space:** Save profiles, set fitness goals (e.g., Lose Fat, Build Muscle, Maintain), and specify dietary preferences (e.g., Keto, Vegan, Balanced, Low Carb) using a unique **Email Address**.
-* **📐 Automated Macro Calibration:** Computes BMR using the Mifflin-St Jeor formula and TDEE based on physical activity multipliers to dynamically structure daily calorie and macronutrient targets.
-* **📸 Multimodal Food Vision:** Identifies food dishes directly from image uploads using Google's **Gemini 2.5 Flash** model.
-* **🔍 USDA API Integration:** Retrieves precise nutritional information (Calories, Protein, Carbs, Fat) using the USDA FoodData Central API, with an intelligent LLM backup estimator.
-* **🍳 Intelligent Recipe Personalization:** Locates recipes using Tavily search queries and re-engineers ingredient ratios or serving sizes to fit the user's customized daily macro targets.
+* **🔐 Zero-Trust Google OAuth 2.0:** Secure authentication with automated session timeout enforcement (30-minute inactivity sliding timeout, 24-hour absolute lifespan) and strict IDOR data ownership protections.
+* **📐 Automated Macro Calibration & Profile Editing:** Computes BMR using the Mifflin-St Jeor formula and TDEE based on physical activity multipliers. Allows inline profile editing with dynamic target recalculation.
+* **📸 Multimodal Food Vision:** Identifies food dishes directly from image uploads using Google's **Gemini 2.5 Flash** model with a 70% confidence threshold and human-in-the-loop validation fallback.
+* **🔍 Dual-Layered Nutrition Resolver:** Retrieves official nutritional data (Calories, Protein, Carbs, Fat) from the USDA FoodData Central API, backed up by an LLM estimator.
+* **🍳 Intelligent Recipe Personalization:** Locates recipes via Tavily Search and adjusts portion sizes or substitutes ingredients to align with the athlete's target macros.
+* **🛡️ Enterprise Security & Rate Limiting:** In-memory sliding window rate limiters protecting against brute force, AI burst abuse, and denial-of-wallet vectors, supported by structured security event audit logging.
 
 ---
 
 ## 🏗️ Architecture & Agent Flow
 
-The application coordinates multiple specialized agents utilizing **LangGraph** to process and transition states between nodes based on user configuration and confidence metrics.
+The application coordinates specialized agents through a **LangGraph StateGraph** state machine.
 
 ```mermaid
 flowchart TD
-    Start([User Interaction]) --> Route{Router Node}
+    Start([User Request]) --> AuthGate{Google OAuth Valid?}
+    AuthGate -- "No" --> Login[Show Login Gateway]
+    AuthGate -- "Yes" --> Route{Router Node}
     
-    Route -- "Calibrate Profile" --> Calc[Calculator Agent]
+    Route -- "Calibrate / Edit Profile" --> Calc[Calculator Agent]
     Route -- "Image Upload" --> Vision[Vision Agent]
-    Route -- "Manual Confirmed Dish" --> Nutrition[Nutrition Agent]
+    Route -- "Confirmed Dish Name" --> Nutrition[Nutrition Agent]
     
-    Calc --> END([End Graph])
+    Calc --> END([Save & End Graph])
     
     Vision --> ConfCheck{Confidence >= 70%?}
     ConfCheck -- "Yes" --> Nutrition
-    ConfCheck -- "No" --> UserConfirm[Await User Input / Exit]
+    ConfCheck -- "No" --> UserConfirm[Prompt User Confirmation]
     UserConfirm --> Nutrition
     
     Nutrition --> Recipe[Recipe Agent]
@@ -42,11 +45,11 @@ flowchart TD
 
 ### Specialized Agents
 
-1. **Calculator Agent (`calculator.py`):** Calculates BMR/TDEE and calibrates target daily limits based on goals and chosen diets.
-2. **Vision Agent (`vision.py`):** Performs food recognition using the Gemini 2.5 Flash model. If the classification confidence is below 70%, the process pauses to allow manual user confirmation.
-3. **Nutrition Agent (`nutrition.py`):** Resolves macronutrients of identified dishes using the USDA API database, failing back to a Groq LLM estimator.
-4. **Recipe Agent (`recipe.py`):** Performs web search for the dish's recipe using Tavily, structuring it cleanly into ingredients, measures, and directions.
-5. **Advisor Agent (`advisor.py`):** The final evaluation node that compares original recipe macros against user limits, adjusting portions or substituting ingredients with explicit math breakdown.
+1. **Calculator Agent (`agents/calculator.py`):** Calculates BMR/TDEE and macro splits (Keto, Vegan, Balanced, Low Carb) based on biometric stats and fitness goals.
+2. **Vision Agent (`agents/vision.py`):** Performs food recognition using Gemini 2.5 Flash, returning structured dish names and confidence metrics.
+3. **Nutrition Agent (`agents/nutrition.py`):** Resolves macronutrients of identified dishes using the USDA API, falling back to a Groq LLM estimator.
+4. **Recipe Agent (`agents/recipe.py`):** Fetches and structures authentic recipes via Tavily Search and Llama-3.3-70B.
+5. **Advisor Agent (`agents/advisor.py`):** Compares meal macros against user targets, proposing recipe modifications and exact serving calculations.
 
 ---
 
@@ -54,24 +57,28 @@ flowchart TD
 
 ```text
 ├── agents/
-│   ├── __init__.py
-│   ├── advisor.py       # Recipe feedback and sports nutrition analysis
-│   ├── calculator.py    # Mifflin-St Jeor BMR & calorie limit calculator
-│   ├── nutrition.py     # Resolves macronutrient values via USDA or LLM
-│   ├── recipe.py        # Fetches and structures recipes via Tavily Search
-│   └── vision.py        # Orchestrates Gemini image analysis
+│   ├── advisor.py            # Recipe adjustments and sports nutrition analysis
+│   ├── calculator.py         # Mifflin-St Jeor BMR & calorie limit calculator
+│   ├── nutrition.py          # Resolves macronutrient values via USDA or LLM
+│   ├── recipe.py             # Fetches and structures recipes via Tavily Search
+│   └── vision.py             # Orchestrates Gemini image analysis
 ├── utils/
-│   ├── gemini.py        # Gemini 2.5 Flash vision integration
-│   ├── storage.py       # JSON storage helper for user profiles
-│   └── usda.py          # USDA API client connection helper
-├── app.py               # Streamlit application dashboard & UI
-├── graph.py             # LangGraph workflow and state transitions
-├── state.py             # LangGraph AgentState TypedDict definition
-├── style.css            # Dark mode and micro-animation styles
-├── users.json           # User profiles persistent file
-├── pyproject.toml       # Project package description & tool configs
-├── requirements.txt     # Python environment requirements list
-└── README.md            # Project documentation (this file)
+│   ├── auth.py               # Session lifecycle, timeouts & cookie hashing
+│   ├── email_service.py      # Secure SMTP alert and notification service
+│   ├── gemini.py             # Gemini 2.5 Flash vision integration
+│   ├── ratelimit.py          # Sliding-window rate limiters for abuse prevention
+│   ├── security_logger.py    # Structured JSON security audit logger
+│   ├── storage.py            # Atomic file storage with IDOR ownership validation
+│   ├── usda.py               # USDA FoodData Central API client
+│   └── validation.py         # Biometric and text input sanitization engine
+├── tests/                    # Comprehensive unit and integration test suite
+├── deploy/                   # Docker, Docker-Compose & Nginx TLS configs
+├── app.py                    # Streamlit web dashboard & UI
+├── graph.py                  # LangGraph workflow and state transitions
+├── state.py                  # LangGraph AgentState TypedDict definition
+├── style.css                 # Editorial wellness design system styles
+├── pyproject.toml            # Project package description & tool configs
+└── project_explanation.txt   # Comprehensive technical interview dossier
 ```
 
 ---
@@ -81,30 +88,30 @@ flowchart TD
 ### 📋 Prerequisites
 
 * Python **>= 3.13**
-* Virtual environment tool (e.g., `venv`, `conda` or `uv`)
+* Package manager (`uv` or `pip`)
 
 ### 🔧 Installation Steps
 
-1. **Clone the Repository** and navigate into the project workspace:
+1. **Clone the Repository**:
    ```bash
-   cd Fitness_agent_system
+   git clone https://github.com/nvangaveti/DietFit.git
+   cd DietFit
    ```
 
-2. **Set Up a Virtual Environment** and activate it:
+2. **Set Up a Virtual Environment**:
    ```bash
-   # Using standard venv
    python -m venv .venv
-   .venv\Scripts\activate  # On Windows
-   # source .venv/bin/activate  # On macOS/Linux
+   .venv\Scripts\activate      # Windows
+   # source .venv/bin/activate  # macOS / Linux
    ```
 
 3. **Install Dependencies**:
    ```bash
-   pip install -r requirements.txt
+   pip install -e .
    ```
 
 4. **Configure Environment Variables**:
-   Create a `.env` file in the root directory of the project and populate it with your API keys:
+   Create a `.env` file or `.streamlit/secrets.toml` with your credentials:
    ```env
    GOOGLE_API_KEY="your-gemini-api-key"
    GROQ_API_KEY="your-groq-api-key"
@@ -112,16 +119,20 @@ flowchart TD
    USDA_API_KEY="your-usda-api-key"
    ```
 
+5. **Run Automated Test Suite**:
+   ```bash
+   python -m unittest discover tests
+   ```
+
 ---
 
 ## 🚀 Running the Application
 
-Launch the Streamlit web dashboard locally using the command:
+Launch the Streamlit web dashboard locally:
 
 ```bash
 streamlit run app.py
 ```
 
-The terminal will provide a local URL (usually `http://localhost:8501`) to access the interface. Log in or register in the sidebar using your email address to begin tracking your diet and plans.
-### Deployed Application Links
-- **Interactive Live App**: [Standalone App](https://dietfit-b6zhx88cokxf4yghmwynvz.streamlit.app/)
+### Deployed Application
+- **Live Streamlit App**: [https://dietfit-b6zhx88cokxf4yghmwynvz.streamlit.app/](https://dietfit-b6zhx88cokxf4yghmwynvz.streamlit.app/)
