@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # 1. Reverse Proxy Service: Enforces HTTPS, HSTS, Security Headers, and Blocks Direct DB Access
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: dietfit-nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"    # HTTP (redirects 301 to HTTPS)
+      - "443:443"  # HTTPS
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs:/etc/ssl/certs:ro
+      - ./private:/etc/ssl/private:ro
+    depends_on:
+      - dietfit-app
+    networks:
+      - dietfit-internal
+      - dietfit-public
+
+  # 2. Application Service: Runs on isolated private bridge network without public port mapping
+  dietfit-app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: dietfit-application
+    restart: unless-stopped
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - USDA_API_KEY=${USDA_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+      - COOKIE_SECRET=${COOKIE_SECRET}
+    volumes:
+      # Persistent secure volume for isolated database storage and audit logs
+      - dietfit-data:/app/data
+      - dietfit-logs:/app/logs
+    networks:
+      - dietfit-internal
+    # Notice: NO public ports exposed directly! Accessible ONLY through nginx-proxy
+
+networks:
+  # Private network connecting only Nginx and DietFit
+  dietfit-internal:
+    internal: true
+  # Public ingress network for Nginx
+  dietfit-public:
+    driver: bridge
+
+volumes:
+  dietfit-data:
+    driver: local
+  dietfit-logs:
+    driver: local

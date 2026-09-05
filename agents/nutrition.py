@@ -3,6 +3,7 @@ import json
 from state import AgentState
 from utils.usda import get_nutrition
 from langchain_groq import ChatGroq
+from utils.validation import sanitize_for_prompt
 
 def estimate_nutrition_with_llm(food_query: str) -> dict:
     """
@@ -13,6 +14,7 @@ def estimate_nutrition_with_llm(food_query: str) -> dict:
     if not api_key:
         return {"food_name": food_query, "calories": 0, "protein": 0, "carbs": 0, "fat": 0}
         
+    clean_query = sanitize_for_prompt(food_query, max_length=100)
     system_prompt = (
         "You are a professional nutrition database parser. "
         "Given a food item or dish name, estimate its average nutritional values per standard serving. "
@@ -25,10 +27,10 @@ def estimate_nutrition_with_llm(food_query: str) -> dict:
         "- 'fat': float (total fat in grams)"
     )
     
-    user_prompt = f"Estimate the nutritional macros for a standard serving of: {food_query}"
+    user_prompt = f"Estimate the nutritional macros for a standard serving of: {clean_query}"
     
     try:
-        model_name = "llama-3.3-70b-versatile"
+        model_name = "openai/gpt-oss-120b"
         llm = ChatGroq(
             temperature=0.1,
             model_name=model_name,
@@ -41,17 +43,7 @@ def estimate_nutrition_with_llm(food_query: str) -> dict:
             ("user", user_prompt)
         ]
         
-        try:
-            response = llm.invoke(messages)
-        except Exception:
-            # Fallback to 8b
-            fallback_llm = ChatGroq(
-                temperature=0.1,
-                model_name="llama-3.1-8b-instant",
-                api_key=api_key,
-                model_kwargs={"response_format": {"type": "json_object"}}
-            )
-            response = fallback_llm.invoke(messages)
+        response = llm.invoke(messages)
             
         content = response.content.strip()
         if content.startswith("```"):
@@ -81,7 +73,8 @@ def nutrition_agent(state: AgentState) -> dict:
     if not dish_name:
         return {"message": "No dish name provided for nutrition lookup."}
         
-    macros = get_nutrition(dish_name)
+    user_id = state.get("email") or state.get("username") or "anonymous"
+    macros = get_nutrition(dish_name, user_id=user_id)
     if macros.get("calories", 0) == 0:
         macros = estimate_nutrition_with_llm(dish_name)
         

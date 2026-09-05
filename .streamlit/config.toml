@@ -1,0 +1,39 @@
+# Streamlit Enterprise Production Security Configuration
+# Reference: https://docs.streamlit.io/develop/api-reference/configuration/config.toml
+
+[server]
+# Run in non-interactive headless mode
+headless = true
+
+# Restrict direct public exposure: bind to localhost so traffic must route via secure HTTPS reverse proxy
+address = "127.0.0.1"
+port = 8501
+
+# Enforce Cross-Site Request Forgery (XSRF) protection on WebSocket connections
+enableXsrfProtection = true
+
+# Enforce strict origin checking; disable cross-origin resource sharing to protect user state
+enableCORS = false
+
+# Restrict max file upload size to 5MB, matching application integrity requirements
+maxUploadSize = 5
+
+# Enable websocket compression only if needed; disable to prevent CRIME/BREACH compression side-channels
+enableWebsocketCompression = false
+
+[browser]
+# Disable telemetry and analytics tracking to prevent metadata leakage
+gatherUsageStats = false
+
+[client]
+# Show error details in development or hide in strict production
+showErrorDetails = false
+
+[theme]
+# Consistent dark theme styling
+base = "dark"
+primaryColor = "#3B82F6"
+backgroundColor = "#0F172A"
+secondaryBackgroundColor = "#1E293B"
+textColor = "#F8FAFC"
+font = "sans serif"

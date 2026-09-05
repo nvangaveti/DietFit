@@ -2,6 +2,7 @@ import os
 import json
 from langchain_groq import ChatGroq
 from state import AgentState
+from utils.validation import sanitize_for_prompt
 
 def get_diet_advice(profile: dict, dish_macros: dict, original_recipe: str, recipe_source_url: str = "") -> dict:
     """
@@ -23,7 +24,7 @@ def get_diet_advice(profile: dict, dish_macros: dict, original_recipe: str, reci
     carb_target = profile.get("carb_target", 200.0)
     fat_target = profile.get("fat_target", 70.0)
     
-    dish_name = dish_macros.get("food_name", "dish")
+    dish_name = sanitize_for_prompt(dish_macros.get("food_name", "dish"), max_length=100)
     dish_cal = dish_macros.get("calories", 0)
     dish_prot = dish_macros.get("protein", 0)
     dish_carb = dish_macros.get("carbs", 0)
@@ -68,9 +69,8 @@ def get_diet_advice(profile: dict, dish_macros: dict, original_recipe: str, reci
     RECIPE SOURCE URL:
     {recipe_source_url}
     """
-    
     try:
-        model_name = "llama-3.3-70b-versatile"
+        model_name = "openai/gpt-oss-120b"
         llm = ChatGroq(
             temperature=0.2,
             model_name=model_name,
@@ -83,16 +83,7 @@ def get_diet_advice(profile: dict, dish_macros: dict, original_recipe: str, reci
             ("user", user_prompt)
         ]
         
-        try:
-            response = llm.invoke(messages)
-        except Exception:
-            fallback_llm = ChatGroq(
-                temperature=0.2,
-                model_name="llama-3.1-8b-instant",
-                api_key=api_key,
-                model_kwargs={"response_format": {"type": "json_object"}}
-            )
-            response = fallback_llm.invoke(messages)
+        response = llm.invoke(messages)
             
         content = response.content.strip()
         if content.startswith("```"):

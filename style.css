@@ -1,137 +1,456 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght=300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-/* Application background and typography */
+:root {
+    /* Grounded Food & Wellness Color Palette */
+    --bg-primary: #141815;
+    --bg-surface: #1C221E;
+    --border-subtle: #2B352E;
+    
+    --accent-sage: #4E9F6E;     /* Unified Primary Accent & Positive State */
+    --accent-energy: #DE7356;   /* Warm Terracotta for Alerts/Adjustments */
+    --accent-protein: #4E9F6E;  /* Sage Leaf */
+    --accent-carbs: #DDA15E;    /* Golden Grain */
+    --accent-fat: #8A9A5B;      /* Warm Olive */
+    
+    --accent-fits: #4E9F6E;     /* Sage Leaf */
+    --accent-mod: #DE7356;      /* Warm Terracotta */
+    
+    --text-primary: #F4EFE6;    /* Soft Cream text */
+    --text-secondary: #98A39A;  /* Muted Sage Grey */
+    --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Base App Theme & Typography */
 .stApp {
-    background-color: #0b0c10;
-    color: #e2e8f0;
-    font-family: 'Outfit', sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    letter-spacing: -0.01em;
 }
 
-/* Header design */
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Outfit', sans-serif;
-    color: #f8fafc;
+    font-family: var(--font-ui);
+    color: var(--text-primary);
     font-weight: 700;
-    margin-top: 0rem;
-}
-
-/* Custom gradient title */
-.main-title {
-    background: linear-gradient(135deg, #6366f1 0%, #10b981 50%, #3b82f6 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-size: 2.8rem;
-    font-weight: 800;
-    text-align: center;
-    margin-bottom: 0.2rem;
     letter-spacing: -0.02em;
 }
 
-.subtitle {
-    text-align: center;
-    color: #94a3b8;
-    font-size: 1.15rem;
-    margin-bottom: 2rem;
-    font-weight: 300;
+/* Header Bar */
+.brand-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
 }
 
-/* Glassmorphism containers */
-.glass-card {
-    background: rgba(30, 41, 59, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+.brand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-sage);
+}
+
+.brand-subtitle {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+    margin-top: 0.2rem;
+}
+
+/* Auth Gate Styling */
+.auth-container {
+    max-width: 520px;
+    margin: 3.5rem auto 1.5rem auto;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
     border-radius: 16px;
-    padding: 1.5rem;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    padding: 2.5rem;
+    text-align: center;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.auth-title {
+    font-size: 1.65rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.auth-desc {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.55;
+}
+
+.auth-badge {
+    display: inline-block;
+    background: rgba(78, 159, 110, 0.12);
+    color: var(--accent-sage);
+    border: 1px solid rgba(78, 159, 110, 0.28);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
     margin-bottom: 1rem;
 }
 
-/* Macro target card styling */
-.macro-card {
-    background: linear-gradient(145deg, rgba(30, 41, 59, 0.5) 0%, rgba(15, 23, 42, 0.5) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 1.25rem;
-    text-align: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+.user-avatar-badge {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--border-subtle);
+    object-fit: cover;
 }
 
-.macro-card:hover {
-    transform: translateY(-5px);
-    border-color: rgba(99, 102, 241, 0.4);
-    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.15);
+/* ------------------------------------------------------------- */
+/* 1. UNIFIED NUTRITION TRACKER CARDS (TARGETS & MEAL RESULTS)   */
+/* ------------------------------------------------------------- */
+.tracker-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 1.35rem;
+    margin-bottom: 1.25rem;
 }
 
-.macro-val {
-    font-size: 1.8rem;
+.tracker-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.85rem;
+}
+
+.tracker-card-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.015em;
+}
+
+.tracker-cal-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.45rem;
+}
+
+.tracker-cal-val {
+    font-size: 1.5rem;
     font-weight: 800;
-    margin-bottom: 0.1rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
 }
 
-.macro-lbl {
-    font-size: 0.85rem;
-    color: #94a3b8;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+.tracker-cal-val span {
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.tracker-cal-sub {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.tracker-progress-track {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.9rem;
+}
+
+.tracker-progress-fill {
+    height: 100%;
+    background: var(--accent-sage);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+/* Reusable Horizontal Macro Chips */
+.macro-chips-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.4rem;
+}
+
+.macro-chip {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 0.32rem 0.75rem;
+    font-size: 0.82rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-primary);
+}
+
+.macro-chip-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.macro-chip-dot.protein { background-color: var(--accent-protein); }
+.macro-chip-dot.carbs { background-color: var(--accent-carbs); }
+.macro-chip-dot.fat { background-color: var(--accent-fat); }
+
+.macro-chip-lbl {
+    color: var(--text-secondary);
     font-weight: 500;
 }
 
-/* Styling badges for verdicts */
-.badge-fits {
-    background-color: rgba(16, 185, 129, 0.15);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    padding: 0.4rem 1rem;
-    border-radius: 9999px;
+.macro-chip-val {
     font-weight: 700;
-    font-size: 0.9rem;
-    display: inline-block;
-    box-shadow: 0 2px 10px rgba(16, 185, 129, 0.1);
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
 }
 
-.badge-mod {
-    background-color: rgba(245, 158, 11, 0.15);
-    color: #f59e0b;
-    border: 1px solid rgba(245, 158, 11, 0.3);
-    padding: 0.4rem 1rem;
-    border-radius: 9999px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    display: inline-block;
-    box-shadow: 0 2px 10px rgba(245, 158, 11, 0.1);
+.tracker-card-footer {
+    margin-top: 0.9rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.8rem;
+    color: var(--text-secondary);
 }
 
-/* Sidebar user profile styles */
-.sidebar-user {
-    border-left: 3px solid #6366f1;
-    padding-left: 10px;
-    margin-bottom: 15px;
+/* ------------------------------------------------------------- */
+/* 2. MEDIA UPLOAD CARD                                          */
+/* ------------------------------------------------------------- */
+.media-upload-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
 }
 
-/* Custom button aesthetics */
-div.stButton > button {
-    background: linear-gradient(135deg, #6366f1 0%, #3b82f6 100%);
-    color: #ffffff;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
+.media-upload-title {
     font-size: 1rem;
-    padding: 0.6rem 1.5rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25);
-}
-div.stButton > button:hover {
-    background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
 }
 
-/* Make subheadings cleaner */
-.section-header {
-    border-bottom: 2px solid rgba(255, 255, 255, 0.05);
-    padding-bottom: 8px;
-    margin-top: 1.5rem;
+.media-upload-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.85rem;
+}
+
+/* ------------------------------------------------------------- */
+/* 3. QUIET BORDERLESS EMPTY STATE                               */
+/* ------------------------------------------------------------- */
+.empty-workspace {
+    text-align: center;
+    padding: 5rem 1.5rem;
+}
+
+.empty-plate-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 1.25rem auto;
+    border-radius: 50%;
+    border: 1.5px dashed var(--border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+}
+
+.empty-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.45rem;
+}
+
+.empty-text {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    max-width: 380px;
+    margin: 0 auto;
+    line-height: 1.55;
+}
+
+/* ------------------------------------------------------------- */
+/* 4. EDITORIAL DOSSIER & RECIPES                                */
+/* ------------------------------------------------------------- */
+.recipe-text-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    line-height: 1.6;
+}
+
+.section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 1.25rem 0 0.75rem 0;
+}
+
+/* Verdict Badges */
+.verdict-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+}
+
+.verdict-fits {
+    background: rgba(78, 159, 110, 0.14);
+    color: #5CB87E;
+    border: 1px solid rgba(78, 159, 110, 0.32);
+}
+
+.verdict-mod {
+    background: rgba(222, 115, 86, 0.14);
+    color: #E88568;
+    border: 1px solid rgba(222, 115, 86, 0.32);
+}
+
+/* Quiet Loader State */
+.quiet-loader {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1.25rem;
+}
+
+.loader-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.3rem;
+}
+
+.loader-sub {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
     margin-bottom: 1rem;
+}
+
+.loader-pulse-bar {
+    height: 4px;
+    width: 100%;
+    background: var(--border-subtle);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+
+.loader-pulse-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 40%;
+    background: var(--accent-sage);
+    border-radius: 2px;
+    animation: loader-slide 1.4s infinite ease-in-out;
+}
+
+@keyframes loader-slide {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(350%); }
+}
+
+/* Skeleton Loading State Shimmer */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.skeleton-box {
+    background: linear-gradient(90deg, #1C221E 25%, #2B352E 37%, #1C221E 63%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+}
+
+.skeleton-card {
+    height: 72px;
+    width: 100%;
+}
+
+.skeleton-text-lg {
+    height: 22px;
+    width: 50%;
+    margin-bottom: 1rem;
+}
+
+.skeleton-block {
+    height: 100px;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+/* User Sidebar Box */
+.user-sidebar-box {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.user-sidebar-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+}
+
+.user-sidebar-email {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Security & Status Banners */
+.security-banner {
+    padding: 0.85rem 1.15rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    display: flex;
+    align-items: center;
+}
+
+.security-banner.warning {
+    background: rgba(222, 115, 86, 0.12);
+    border: 1px solid rgba(222, 115, 86, 0.35);
+    color: #E88568;
+}
+
+.security-banner.success {
+    background: rgba(78, 159, 110, 0.12);
+    border: 1px solid rgba(78, 159, 110, 0.35);
+    color: #5CB87E;
+}
+
+.security-banner.info {
+    background: rgba(78, 159, 110, 0.1);
+    border: 1px solid rgba(78, 159, 110, 0.25);
+    color: #4E9F6E;
 }

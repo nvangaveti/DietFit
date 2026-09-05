@@ -1,19 +1,47 @@
-# Python-generated files
+# Python-generated files & bytecode
 __pycache__/
 *.py[oc]
 build/
 dist/
 wheels/
 *.egg-info
+*.egg
 
 # Virtual environments
-.venv
+.venv/
+venv/
+ENV/
+env/
 
-# Environment variables & secrets
+# Environment variables & secrets (CRITICAL: NEVER COMMIT)
 .env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+*.pem
+*.key
+*.cert
+*.pfx
 
-# Local database storage
+# Local database storage & cache
 users.json
+users.json.tmp
+*.bak
+*.bak_*
 
 # Recruiter & Interviewer explanation docs
 project_explanation.txt
+
+# Testing & IDE artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+.idea/
+.vscode/
+
+# Security audit logs & TLS certs (CRITICAL: NEVER COMMIT)
+logs/
+*.log
+*.jsonl
+deploy/certs/
+deploy/private/
