@@ -13,6 +13,7 @@ class AgentState(TypedDict):
     carb_target:Optional[float]
     fat_target:Optional[float]
     image_path:Optional[str]
+    is_food:Optional[bool]
     dish_name:Optional[str]
     vision_confidence:Optional[float]
     dish_calories:Optional[float]

@@ -12,6 +12,7 @@ def vision_agent(state: AgentState) -> dict:
         
     analysis = analyze_dish_image(image_path)
     return {
+        "is_food": analysis.get("is_food", False),
         "dish_name": analysis.get("dish_name", "Unknown Dish"),
         "vision_confidence": float(analysis.get("confidence", 0.0))
     }

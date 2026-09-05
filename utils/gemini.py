@@ -7,8 +7,9 @@ from utils.security_logger import log_security_event, EVENT_API_ERROR, EVENT_ABU
 
 def analyze_dish_image(image_input, user_id: str = "anonymous") -> dict:
     """
-    Uses Gemini Flash to analyze a food image, returning the dish name and confidence score.
-    Returns: {"dish_name": str, "confidence": float}
+    Uses Gemini Flash to analyze an image, classifying whether it is a food dish,
+    and returning the dish name and confidence score.
+    Returns: {"is_food": bool, "dish_name": Optional[str], "confidence": float}
     """
     if not user_id or user_id == "anonymous":
         try:
@@ -32,7 +33,7 @@ def analyze_dish_image(image_input, user_id: str = "anonymous") -> dict:
             details={"cooldown": cooldown}
         )
         print(f"Gemini Vision Rate Limit Exceeded for {clean_user}: Cooldown active for {cooldown}s")
-        return {"dish_name": "Rate Limited (Please wait)", "confidence": 0.0, "rate_limited": True}
+        return {"is_food": False, "dish_name": "Rate Limited (Please wait)", "confidence": 0.0, "rate_limited": True}
 
     api_key = os.environ.get("GOOGLE_API_KEY")
     if not api_key:
@@ -47,10 +48,16 @@ def analyze_dish_image(image_input, user_id: str = "anonymous") -> dict:
     try:
         image = Image.open(image_input)
         prompt = (
-            "Identify the main food dish in this image. "
-            "Respond ONLY with a JSON object containing two fields: "
-            "'dish_name' (a string, the common name of the dish) and "
-            "'confidence' (a float between 0.0 and 1.0 representing your confidence in this identification)."
+            "Examine this image carefully.\n"
+            "1. Determine whether the image contains a food dish or edible meal.\n"
+            "2. If it contains a food dish, set 'is_food' to true, identify the common name of the dish in 'dish_name', "
+            "and set your confidence score (0.0 to 1.0) in 'confidence'.\n"
+            "3. If it does NOT contain any food or meal (e.g., random objects, scenery, text, screenshots, humans, animals, electronics), "
+            "set 'is_food' to false, 'dish_name' to null, and 'confidence' to 0.0.\n\n"
+            "Respond ONLY with a JSON object containing:\n"
+            "- 'is_food': boolean (true or false)\n"
+            "- 'dish_name': string or null\n"
+            "- 'confidence': float between 0.0 and 1.0"
         )
         
         response = model.generate_content(
@@ -62,9 +69,21 @@ def analyze_dish_image(image_input, user_id: str = "anonymous") -> dict:
         )
         
         result = json.loads(response.text)
+        is_food = bool(result.get("is_food", True))
+        dish_name = result.get("dish_name")
+        conf = float(result.get("confidence", 0.5 if is_food else 0.0))
+
+        if not is_food or not dish_name:
+            return {
+                "is_food": False,
+                "dish_name": None,
+                "confidence": 0.0
+            }
+
         return {
-            "dish_name": result.get("dish_name", "Unknown Dish"),
-            "confidence": float(result.get("confidence", 0.5))
+            "is_food": True,
+            "dish_name": str(dish_name),
+            "confidence": conf
         }
     except Exception as e:
         log_security_event(
@@ -76,7 +95,7 @@ def analyze_dish_image(image_input, user_id: str = "anonymous") -> dict:
             details={"error": str(e)}
         )
         print(f"Gemini Vision API error: {e}")
-        return {"dish_name": "Unknown Dish", "confidence": 0.0}
+        return {"is_food": False, "dish_name": "Unknown Dish", "confidence": 0.0}
 
 if __name__ == "__main__":
     # Test stub

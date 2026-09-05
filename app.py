@@ -167,7 +167,7 @@ def clean_recipe_text(text: str) -> str:
 
 # Initialize Session States
 for key, val in [("oauth_session", None), ("profile", None), ("editing_profile", False),
-                 ("awaiting_confirmation", False), ("detected_dish_name", ""), ("analysis_results", None)]:
+                 ("awaiting_confirmation", False), ("detected_dish_name", ""), ("is_not_food", False), ("analysis_results", None)]:
     if key not in st.session_state:
         st.session_state[key] = val
 
@@ -329,6 +329,7 @@ with col_h2:
         st.session_state.editing_profile = False
         st.session_state.awaiting_confirmation = False
         st.session_state.detected_dish_name = ""
+        st.session_state.is_not_food = False
         st.session_state.analysis_results = None
         if hasattr(st, "logout"):
             try:
@@ -366,6 +367,7 @@ with st.sidebar:
         st.session_state.editing_profile = False
         st.session_state.awaiting_confirmation = False
         st.session_state.detected_dish_name = ""
+        st.session_state.is_not_food = False
         st.session_state.analysis_results = None
         if hasattr(st, "logout"):
             try:
@@ -657,14 +659,45 @@ else:
                     st.error(f"Request Throttled: {rle}")
                     return
                 
+                is_food = res_state.get("is_food", True)
                 conf = res_state.get("vision_confidence", 1.0)
                 dish_name = res_state.get("dish_name", "Identified Dish")
-                st.session_state.detected_dish_name = dish_name
+                st.session_state.detected_dish_name = dish_name or ""
                 
-                if conf < 0.70 and not clean_dish_override:
-                    st.session_state.awaiting_confirmation = True
+                if not clean_dish_override:
+                    if not is_food:
+                        st.session_state.awaiting_confirmation = True
+                        st.session_state.is_not_food = True
+                        st.session_state.analysis_results = None
+                    elif conf < 0.70:
+                        st.session_state.awaiting_confirmation = True
+                        st.session_state.is_not_food = False
+                        st.session_state.analysis_results = None
+                    else:
+                        st.session_state.awaiting_confirmation = False
+                        st.session_state.is_not_food = False
+                        st.session_state.analysis_results = {
+                            "dish_name": dish_name,
+                            "confidence": conf,
+                            "macros": {
+                                "calories": res_state.get("dish_calories"),
+                                "protein": res_state.get("dish_protein"),
+                                "carbs": res_state.get("dish_carbs"),
+                                "fat": res_state.get("dish_fat")
+                            },
+                            "recipe_info": {
+                                "original_recipe": res_state.get("original_recipe"),
+                                "recipe_source_url": res_state.get("recipe_source_url")
+                            },
+                            "advice": {
+                                "verdict": res_state.get("verdict"),
+                                "adjusted_recipe": res_state.get("adjusted_recipe"),
+                                "explanation": res_state.get("explanation")
+                            }
+                        }
                 else:
                     st.session_state.awaiting_confirmation = False
+                    st.session_state.is_not_food = False
                     st.session_state.analysis_results = {
                         "dish_name": dish_name,
                         "confidence": conf,
@@ -709,12 +742,24 @@ else:
                 </div>
             """, unsafe_allow_html=True)
 
-        # Low Confidence Confirmation Box
+        # Low Confidence / Non-Food Confirmation Box
         if st.session_state.awaiting_confirmation:
-            st.warning(f"We couldn't identify this dish with high confidence ('{st.session_state.detected_dish_name}'). Please confirm or edit the dish name below.")
-            confirmed_name = st.text_input("Dish Name", value=st.session_state.detected_dish_name)
-            if st.button("Confirm Dish Name & Analyze", type="primary", use_container_width=True):
-                run_full_pipeline(dish_name_override=confirmed_name)
+            if st.session_state.get("is_not_food", False):
+                st.warning("This doesn't look like a food photo. Please upload a clear photo of your meal, or type the dish name below so I can look it up directly.")
+                confirmed_name = st.text_input("Dish Name", placeholder="e.g., Grilled Chicken Salad")
+                if st.button("Look Up Dish & Analyze", type="primary", use_container_width=True):
+                    if confirmed_name.strip():
+                        run_full_pipeline(dish_name_override=confirmed_name.strip())
+                    else:
+                        st.error("Please enter a valid dish name.")
+            else:
+                st.warning(f"We couldn't identify this dish with high confidence ('{st.session_state.detected_dish_name}'). Please confirm or edit the dish name below.")
+                confirmed_name = st.text_input("Dish Name", value=st.session_state.detected_dish_name)
+                if st.button("Confirm Dish Name & Analyze", type="primary", use_container_width=True):
+                    if confirmed_name.strip():
+                        run_full_pipeline(dish_name_override=confirmed_name.strip())
+                    else:
+                        st.error("Please enter a valid dish name.")
 
         # Display Pipeline Analysis Results
         if st.session_state.analysis_results:
@@ -755,4 +800,5 @@ else:
             if st.button("Analyze Another Meal", use_container_width=True):
                 st.session_state.analysis_results = None
                 st.session_state.awaiting_confirmation = False
+                st.session_state.is_not_food = False
                 st.rerun()

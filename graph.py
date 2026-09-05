@@ -25,11 +25,12 @@ def route_start(state: AgentState) -> str:
 
 def route_post_vision(state: AgentState) -> str:
     """
-    If vision confidence is low, we exit to let the user confirm.
-    Otherwise we proceed directly to nutrition.
+    If vision detects non-food or confidence is low, exit to let the user confirm or input manually.
+    Otherwise proceed directly to nutrition.
     """
+    is_food = state.get("is_food", True)
     conf = float(state.get("vision_confidence", 0.0))
-    if conf < 0.70:
+    if not is_food or conf < 0.70:
         return END
     return "nutrition"
 
